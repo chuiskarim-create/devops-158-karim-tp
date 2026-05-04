@@ -1,23 +1,56 @@
 pipeline {
     agent any
+
+    triggers {
+        pollSCM('* * * * *')  // vérifie toutes les minutes
+    }
+
     stages {
-        stage('Clone') {
+        stage('Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/chuiskarim-create/devops-158-karim-tp'
+                git branch: 'main', url: https://github.com/chuiskarim-create/devops-158-karim-tp
             }
         }
-        stage('Build') {
+
+        stage('Pull latest code') {
             steps {
-                sh 'docker build -t devops-158-karim .'
+                dir(/home/pi_158_karim/devops-158-Karim-tp) {
+                    git branch: 'main', url: https://github.com/chuiskarim-create/devops-158-karim-tp
+                }
             }
         }
-        stage('Deploy') {
+
+        stage('Install dependencies') {
             steps {
-                sh 'docker stop devops-158-karim || true'
-                sh 'docker rm devops-158-karim || true'
-                sh 'docker run -d -p 5000:5000 --name devops-158-karim devops-158-karim'
+                dir(/home/pi_158_karim/devops-158-Karim-tp) {
+                    sh '''
+                        source venv/bin/activate
+                        pip install flask
+                    '''
+                }
             }
+        }
+
+        stage('Restart Flask app') {
+            steps {
+                script {
+                    sh 'pkill -f "python app.py" || true'
+                    sh '''
+                        cd /home/pi_158_karim/devops-158-Karim-tp
+                        source venv/bin/activate
+                        nohup python app.py > flask.log 2>&1 &
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Déploiement automatique réussi ! BRAVO DAMN'
+        }
+        failure {
+            echo 'Échec du pipeline. - AIE AIE AIE CA PUE'
         }
     }
 }
