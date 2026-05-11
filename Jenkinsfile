@@ -27,8 +27,26 @@ pipeline {
                 sh '''
                     python3 -m venv $WORKSPACE/venv
                     . $WORKSPACE/venv/bin/activate
-                    pip install flask
+                    pip install flask pytest
                 '''
+            }
+        }
+
+        stage('Run unit tests') {
+            steps {
+                sh '''
+                    cd /home/pi_158_karim/devops-158-karim-tp
+                    . $WORKSPACE/venv/bin/activate
+                    python -m pytest test_app.py -v --tb=short
+                '''
+            }
+            post {
+                success {
+                    echo 'Tous les tests unitaires sont passés avec succès !'
+                }
+                failure {
+                    echo 'Échec des tests unitaires. Le déploiement est annulé.'
+                }
             }
         }
 
@@ -43,24 +61,6 @@ pipeline {
             }
         }
     }
-	
-		stage('Run unit tests') {
-			steps {
-				sh '''
-					cd /home/pi_158_karim/devops-158-karim-tp
-					. $WORKSPACE/venv/bin/activate
-					python -m pytest test_app.py -v --tb=short
-				'''
-			}
-			post {
-				success {
-					echo 'Tous les tests unitaires sont passés avec succès !'
-				}
-				failure {
-					echo 'Échec des tests unitaires. Le déploiement est annulé.'
-				}
-			}
-		}
 
     post {
         success {
@@ -71,5 +71,3 @@ pipeline {
         }
     }
 }
-
-
