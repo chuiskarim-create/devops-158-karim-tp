@@ -12,37 +12,35 @@ pipeline {
             }
         }
 
-    stage('Pull latest code') {
-        steps {
-            sh '''
-                git config --global --add safe.directory /home/pi_158_karim/devops-158-karim-tp
-                cd /home/pi_158_karim/devops-158-karim-tp
-                git pull origin main
-             '''
+        stage('Pull latest code') {
+            steps {
+                sh '''
+                    git config --global --add safe.directory /home/pi_158_karim/devops-158-karim-tp
+                    cd /home/pi_158_karim/devops-158-karim-tp
+                    git pull origin main
+                '''
+            }
         }
-    }
+
         stage('Install dependencies') {
             steps {
-                dir('/home/pi_158_karim/devops-158-karim-tp') {
-                    sh '''
-                        python3 -m venv venv
-                        . venv/bin/activate
-                        pip install flask
-                    '''
-                }
+                sh '''
+                    cd /home/pi_158_karim/devops-158-karim-tp
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install flask
+                '''
             }
         }
 
         stage('Restart Flask app') {
             steps {
-                script {
-                    sh 'pkill -f "python app.py" || true'
-                    sh '''
-                        cd /home/pi_158_karim/devops-158-karim-tp
-                        . venv/bin/activate
-                        nohup python app.py > flask.log 2>&1 &
-                    '''
-                }
+                sh '''
+                    pkill -f "python app.py" || true
+                    cd /home/pi_158_karim/devops-158-karim-tp
+                    . venv/bin/activate
+                    nohup python app.py > flask.log 2>&1 &
+                '''
             }
         }
     }
