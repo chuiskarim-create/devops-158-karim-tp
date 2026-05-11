@@ -12,15 +12,15 @@ pipeline {
             }
         }
 
-        stage('Pull latest code') {
-            steps {
-                sh '''
-                    cd /home/pi_158_karim/devops-158-karim-tp
-                    git pull origin main
-                '''
-            }
+    stage('Pull latest code') {
+        steps {
+            sh '''
+                git config --global --add safe.directory /home/pi_158_karim/devops-158-karim-tp
+                cd /home/pi_158_karim/devops-158-karim-tp
+                git pull origin main
+             '''
         }
-
+    }
         stage('Install dependencies') {
             steps {
                 dir('/home/pi_158_karim/devops-158-karim-tp') {
