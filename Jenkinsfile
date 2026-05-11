@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     triggers {
-        pollSCM('* * * * *')
+        pollSCM('* * * * *') // vérifie toutes les minutes
     }
 
     stages {
@@ -14,9 +14,7 @@ pipeline {
 
         stage('Pull latest code') {
             steps {
-                dir('/home/pi_158_karim/devops-158-karim-tp') {
-                    git branch: 'main', url: 'https://github.com/chuiskarim-create/devops-158-karim-tp'
-                }
+                sh 'cp -r $WORKSPACE/. /home/pi_158_karim/devops-158-karim-tp/'
             }
         }
 
@@ -24,7 +22,8 @@ pipeline {
             steps {
                 dir('/home/pi_158_karim/devops-158-karim-tp') {
                     sh '''
-                        source venv/bin/activate
+                        python3 -m venv venv
+                        . venv/bin/activate
                         pip install flask
                     '''
                 }
@@ -37,7 +36,7 @@ pipeline {
                     sh 'pkill -f "python app.py" || true'
                     sh '''
                         cd /home/pi_158_karim/devops-158-karim-tp
-                        source venv/bin/activate
+                        . venv/bin/activate
                         nohup python app.py > flask.log 2>&1 &
                     '''
                 }
