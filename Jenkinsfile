@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     triggers {
-        pollSCM('* * * * *') // vérifie toutes les minutes
+        pollSCM('* * * * *')
     }
 
     stages {
@@ -22,26 +22,28 @@ pipeline {
             }
         }
 
-    stage('Install dependencies') {
-        steps {
-            sh '''
-                python3 -m venv $WORKSPACE/venv
-                . $WORKSPACE/venv/bin/activate
-                pip install flask
-            '''
+        stage('Install dependencies') {
+            steps {
+                sh '''
+                    python3 -m venv $WORKSPACE/venv
+                    . $WORKSPACE/venv/bin/activate
+                    pip install flask
+                '''
+            }
+        }
+
+        stage('Restart Flask app') {
+            steps {
+                sh '''
+                    pkill -f "python app.py" || true
+                    cd /home/pi_158_karim/devops-158-karim-tp
+                    . $WORKSPACE/venv/bin/activate
+                    nohup python app.py > flask.log 2>&1 &
+                '''
+            }
         }
     }
 
-    stage('Restart Flask app') {
-        steps {
-            sh '''
-                pkill -f "python app.py" || true
-                cd /home/pi_158_karim/devops-158-karim-tp
-                . $WORKSPACE/venv/bin/activate
-                nohup python app.py > flask.log 2>&1 &
-            '''
-        }
-    }
     post {
         success {
             echo 'Déploiement automatique réussi ! BRAVO DAMN'
